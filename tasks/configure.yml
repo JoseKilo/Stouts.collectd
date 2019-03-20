@@ -11,9 +11,17 @@
   template: src=types.db.j2 dest={{collectd_prefix_type}}/types.db
   notify: collectd restart
 
-- name: collectd-configure | Setup Collectd service
+- name: collectd-configure | Setup Collectd service (Upstart)
   template: src=upstart.conf.j2 dest=/etc/init/collectd.conf
-  when: collectd_upstart
+  when: collectd_service == 'upstart'
+  notify:
+  - collectd restart
+
+- name: collectd-configure | Setup Collectd service (SystemD)
+  template: src=systemd.j2 dest=/etc/systemd/system/collectd.service owner=root group=root mode=0644
+  when: collectd_service == 'systemd'
+  notify:
+  - collectd restart
 
 - name: collectd-configure | Ensure the Collectd is enabled and started
   service: name=collectd state=started enabled=yes
